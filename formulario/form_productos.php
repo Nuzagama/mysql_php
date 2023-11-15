@@ -8,9 +8,21 @@
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <?php require('../conf/conection.php'); ?>
 </head>
-<body class = "bg-dark">
+<body class = "bg-light">
 
 <?php
+
+    session_start();
+
+    if($_SESSION["rol"] != "admin"){
+        $alert_errorMain = "<div class='alert alert-danger mt-5' role='alert'>
+        No tienes permisos para ver la página para registrar Productos.
+                </div>";
+        $_SESSION['alert_error'] = $alert_errorMain;
+        header('location: ../main.php');
+    }
+
+
     //Función para depurar
     function depurar($entrada){
         $salida = htmlspecialchars($entrada);
@@ -18,11 +30,7 @@
         return $salida;
         }
 
-    session_start();
-    if($_SESSION['rol'] == 'admin'){
 
-   
-        
     if($_SERVER["REQUEST_METHOD"] == "POST"){
         $temp_nombreProducto = depurar($_POST["nombreProducto"]);
         $temp_precioProducto = depurar($_POST["precioProducto"]);
@@ -36,9 +44,9 @@
         $ruta_temporal = $_FILES["imagen"]["tmp_name"];
         //echo $nombre_imagen . " " . $tipo_imagen . " " . $tamano_imagen . " " . $ruta_temporal;
         
-        $ruta_final = "../imagenes/" . $nombre_imagen;
+        $ruta_final_temp = "../imagenes/" . $nombre_imagen;
 
-        move_uploaded_file($ruta_temporal, $ruta_final);
+        
         
         // Controlamos el Input de Nombre Producto
         if(!strlen($temp_nombreProducto) > 0){
@@ -99,15 +107,23 @@
                 $cantidadProducto = (int)$temp_cantidadProducto;
             }
         }
-    }
-}else{
-    header('location: ../main.php');
 
-    $alert_errorMain = "<div class='alert alert-danger mt-5' role='alert'>
-    No tienes permisos para ver la página para registrar Productos.
-            </div>";
-    $_SESSION['alert_error'] = $alert_errorMain;
-}
+        if(!strlen($nombre_imagen) > 0){
+            $err_subirImagen = "Debes introducir una imagen";
+        }else{
+            if($tipo_imagen == "image/jpg" || $tipo_imagen == "image/png" || $tipo_imagen == "image/jpeg"){
+                if($tamano_imagen > 0 && $tamano_imagen <=1000000){
+                    $ruta_final = $ruta_final_temp;
+                    move_uploaded_file($ruta_temporal, $ruta_final);
+                }else{
+                    $err_subirImagen = "El tamaño del archivo debe ser máximo 1MB";
+                }
+        }else{
+            $err_subirImagen = "Debes introducir una imagen del tipo permitido.";
+            echo $tipo_imagen;
+        }
+        }
+    }
 ?>        
 <div class="container text-warning">
 <h1 class="lead mt-5"><b>Formulario de Productos:</b></h1>  
@@ -136,7 +152,7 @@
         <div class="mb-3">
             <label class="form-label">Imagen</label>
             <input class="form-control" type="file" name="imagen">
-            <?php if(isset($err_rutaImagen)) echo $err_rutaImagen; ?>
+            <?php if(isset($err_subirImagen)) echo $err_subirImagen; ?>
         </div>
 
             <input type="submit" class="btn btn-warning mb-2 mt-3" value="Insertar Producto">
@@ -147,7 +163,7 @@
     <?php
         // Comprobamos que las variables están declaradas, por tanto están depuradas.
         if(isset($nombreProducto) && isset($precioProducto) && isset($descripcionProducto)
-        && isset($cantidadProducto)){
+        && isset($cantidadProducto) && isset($ruta_final)){
             // Hacemos el Insert a nuestra base de datos
             $sql = "INSERT INTO productos (nombreProducto, precio, descripcion, cantidad, imagen)
             VALUES ('$nombreProducto', '$precioProducto', '$descripcionProducto', '$cantidadProducto', '$ruta_final')";

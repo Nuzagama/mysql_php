@@ -10,6 +10,7 @@
 </head>
 <body class="bg-light">
     <?php
+session_start();
 
 function depurar($entrada) {
     $salida = htmlspecialchars($entrada);
@@ -23,25 +24,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     $contra_temp = depurar($_POST["contra"]);
 
     if(!strlen($usuario_temp) > 0){
-        $alert_usuario = "<div class='alert alert-danger' role='alert'>
+        $alert_usuario = "<div class='alert alert-danger mt-2' role='alert'>
         No puedes introducir un campo de usuario vacío
         </div>";
     }elseif(!strlen($contra_temp) > 0){
-        $alert_contra = "<div class='alert alert-danger' role='alert'>
+        $alert_contra = "<div class='alert alert-danger mt-2' role='alert '>
         No puedes introducir un campo de contraseña vacío
                 </div>";
     }else{
         if(!preg_match("/^[a-zA-Z_]{4,12}$/", $usuario_temp)) {
             $alert_usuario = 
-            "<div class='alert alert-danger' role='alert'>
+            "<div class='alert alert-danger mt-2' role='alert '>
             El nombre de usuario debe tener entre 4 y 12 caracteres y solo contener letras y/o barra baja _           
             </div>";
         } elseif(strlen($contra_temp) > 255) {
-            $alert_contra = 
-            "<div class='alert alert-danger' role='alert'>
+            $alert_error = 
+            "<div class='alert alert-danger mt-2' role='alert mt-2'>
             La contraseña debe tener un máximo de 255 caracteres
                         </div>";
-        } else {
+        }elseif(!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,20}$/", $contra_temp)){
+            $alert_error = 
+            "<div class='alert alert-danger mt-2' role='alert'>
+            Las contraseña debe tener mínimo un carácter en minúscula, 
+            uno en mayúscula, un número y un carácter especial. 
+            Además, tendrán una longitud de entre 8 y 20 caracteres.          
+            </div>"; 
+        }else {
 
             $sql = "SELECT * FROM usuarios WHERE usuario = '$usuario_temp'";
             $resultado = $conexion -> query($sql);
@@ -50,32 +58,33 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     
             if($resultado -> num_rows === 0) { 
                 $alert_usuario = 
-                "<div class='alert alert-danger' role='alert'>
-                El usuario no existe            
+                "<div class='alert alert-danger mt-2'' role='alert >
+                El usuario o contraseña no válido            
                 </div>";
             } else {
 
                 while($fila = $resultado -> fetch_assoc()) {
                     $contrasena_cifrada = $fila["contrasena"];
+                    $recuperarRol = $fila["rol"];
                 }
         
                 $acceso_valido = password_verify($contra_temp, $contrasena_cifrada);
         
                 if($acceso_valido) {
-                    $alert_exito = "<div class='alert alert-success' role='alert'>
-                    Cuenta creada con éxito               
+                    $alert_exito = "<div class='alert alert-success mt-2' role='alert'>
+                    Cuenta logeada con éxito               
                     </div>";
 
-                    $sql = "SELECT rol FROM usuarios WHERE usuario = '$usuario_temp'";
-                    $recuperarRol = $conexion -> query($sql);
 
-                    session_start();
+                
                     $_SESSION["usuario"] = $usuario_temp;
                     $_SESSION["rol"] = $recuperarRol;
                     header('location: ../main.php');
+
+
                 } else {
                     $alert_contra = 
-                    "<div class='alert alert-danger' role='alert'>
+                    "<div class='alert alert-danger mt-2' role='alert'>
                     La contraseña es incorrecta          
                     </div>";
                 }
@@ -100,6 +109,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <input class="btn btn-primary" type="submit" value="Registrarse">
             <?php if(isset($alert_exito)) echo $alert_exito; ?>
+            <?php if(isset($alert_error)) echo $alert_error ?>
         </form>    
     </div>
 </body>
