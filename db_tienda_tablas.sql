@@ -34,7 +34,9 @@ CONSTRAINT fk_productosCestas_cestas
 CREATE TABLE usuarios (
 usuario VARCHAR(12) PRIMARY KEY,
 contrasena VARCHAR(255) NOT NULL,
-fechaNacimiento DATE NOT NULL
+fechaNacimiento DATE NOT NULL,
+rol VARCHAR(20) DEFAULT 'miembro',
+saldo FLOAT DEFAULT '0'
 );
 
 CREATE TABLE cestas (
