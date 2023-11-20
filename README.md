@@ -11,7 +11,8 @@ El proposito de este proyecto es crear una Tienda Online.
 
 ## 👓 IDEA GENERAL
 
-Mi Tienda esta creada para funcionar como <i>Premium Shop</i> para un supuesto juego virtual en el que puedes comprar Productos a cambio de 💎 para así mejorar tu personaje, algunas de las imágenes que he utilizado pertenecen al juego MMORPG Koreano <i>"Tantra Online"</i>.
+Mi Tienda esta creada para funcionar como <i>Premium Shop</i> para un supuesto juego virtual en el que puedes comprar Productos a cambio de 💎 para así mejorar tu personaje. 
+Algunas de las imágenes que he utilizado pertenecen al juego MMORPG Koreano <i>"Tantra Online"</i>.
 
 ## ✨ DETALLES DEL PROYECTO
 
