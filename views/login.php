@@ -36,13 +36,14 @@
             if (!preg_match("/^[a-zA-Z_]{4,12}$/", $usuario_temp)) {
                 $alert_usuario =
                     "<div class='alert alert-danger mt-2' role='alert '>
-                    El usuario o contraseña no es válido               </div>";
+                    El usuario o contraseña no es válido               
+                    </div>";
             //Controlamos que la contraseña no exceda 255
             } elseif (strlen($contra_temp) > 255) {
                 $alert_error =
                     "<div class='alert alert-danger mt-2' role='alert mt-2'>
                     El usuario o contraseña no es válido   
-                        </div>";
+                    </div>";
             //Controlamos que la contraseña tenga los mismos requisitos que en el registro
             } elseif (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,20}$/", $contra_temp)) {
                 $alert_error =
@@ -56,10 +57,10 @@
                 $resultado = $conexion->query($sql);
 
                 if ($resultado->num_rows === 0) {
-                    $alert_usuario =
-                        "<div class='alert alert-danger mt-2'' role='alert >
-                El usuario o contraseña no es válido            
-                </div>";
+                    $alert_usuario ="<div class='alert alert-danger mt-2'>
+                        <em class='icon ni ni-alert-circle'></em>
+                        <strong>Usuario o Contraseña incorrecta.</strong>
+                    </div>";
                 } else {
                     //Extraemos datos necesarios del usuario
                     while ($fila = $resultado->fetch_assoc()) {
@@ -76,7 +77,7 @@
                     </div>";
 
 
-
+                        //Declaramos Sesiones
                         $_SESSION["usuario"] = $usuario_temp;
                         $_SESSION["rol"] = $recuperarRol;
                         $_SESSION["saldo"] = $saldoBalance;
@@ -169,8 +170,6 @@
                                     <source src="images/video/video_bg.mp4" type="video/mp4">
                                 </video>
 
-
-
                                 <div class="nk-footer-links-auth-logo">
                                     <ul class="nav nav-sm">
                                         <li class="nav-item logo-link">
@@ -183,7 +182,6 @@
                     </div>
                 </div>
             </div>
-        </div>
     </body>
 
     </html>

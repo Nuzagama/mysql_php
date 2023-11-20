@@ -78,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalizarPedido'])) {
 
             $success_message = "Pedido realizado con éxito.";
         }else{
-            $error_message = "No tienes suficientes gemas crack y deja de tocar el HTML 👻👻👻";
+            $error_message = "No tienes suficientes gemas crack y no me toques el HTML 👻👻👻";
         }
 
 
@@ -289,31 +289,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalizarPedido'])) {
                                                                     WHERE c.usuario = '$usuario'";
 
                                                             $resultado = $conexion->query($sql);
-
-                                                            if ($resultado->num_rows > 0) {
-                                                                while ($fila = $resultado->fetch_assoc()) {
-                                                                    echo "<tr>";
-                                                                    echo "<td class='align-middle'>" . $fila['nombreProducto'] . "</td>";
-                                                                    $precioFormateado = formatearPrecio($fila['precio']);
-                                                                    echo "<td class='align-middle'>💎" . $precioFormateado . "</td>";
-                                                                    echo "<td class='align-middle'>" . $fila['cantidad'] . "</td>";
-                                                                    echo "<td class='align-middle'><img src='" . $fila['imagen'] . "' height='50px' width='50px'></td>";
-                                                                    echo "</tr>";
+                                                         
+                                                                
+                                                                if ($resultado->num_rows > 0) {
+                                                                    while ($fila = $resultado->fetch_assoc()) {
+                                                                        echo "<tr>";
+                                                                        echo "<td class='align-middle'>" . $fila['nombreProducto'] . "</td>";
+                                                                        $precioFormateado = formatearPrecio($fila['precio']);
+                                                                        echo "<td class='align-middle'>💎" . $precioFormateado . "</td>";
+                                                                        echo "<td class='align-middle'>" . $fila['cantidad'] . "</td>";
+                                                                        echo "<td class='align-middle'><img src='" . $fila['imagen'] . "' height='50px' width='50px'></td>";
+                                                                        echo "</tr>";
+                                                                    }
+                                                                    // Mostramos el precio y formateamos ... le quitamos .00 final
+                                                                    $precioTotalFormateado = formatearPrecio($precioTotal);
+                                                                    echo "<tr><td colspan='4'>
+                                                                    Precio Total de tu Cesta💎$precioTotalFormateado
+                                                                    </td></tr>";?>
+                                                                    <?php
+                                                                    echo "<tr><td colspan='4'>
+                                                                    Tu Saldo actual💎$saldoBalance
+                                                                    </td></tr>";?>
+                                                                    <?php
+                                                                } else {
+                                                                    $error_message = "No hay productos en la cesta";
                                                                 }
-                                                                // Mostramos el precio y formateamos ... le quitamos .00 final
-                                                                $precioTotalFormateado = formatearPrecio($precioTotal);
-                                                                echo "<tr><td colspan='4'>
-                                                                Precio Total de tu Cesta💎$precioTotalFormateado
-                                                                </td></tr>";?>
-                                                                <?php
-                                                                echo "<tr><td colspan='4'>
-                                                                Tu Saldo actual💎$saldoBalance
-                                                                </td></tr>";?>
-                                                                <?php
-                                                            } else {
-                                                                $error_message = "No hay productos en la cesta";
-                                                            }
-
+                                                           
                                                             ?>
                                                         </tbody>
                                                     </table>

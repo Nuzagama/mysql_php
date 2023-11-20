@@ -39,19 +39,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($idProducto) && isset($cantidad)) {
         //Obtenemos ID CESTA
         $sqlCesta = "SELECT idCesta FROM cestas WHERE usuario = '" . $usuario . "'";
-        $resultadoCesta = $conexion->query($sqlCesta);
-
+        $resultadoCesta = $conexion->query($sqlCesta);  
         //Controlamos que precioTotal no sea mayor a 99.999
         //Sacamos el PrecioTotal del usuario en ese momento
         $sqlPrecioTotal = "SELECT precioTotal FROM cestas WHERE usuario = '" . $usuario . "'";
         $resultadoPrecioTotal = $conexion->query($sqlPrecioTotal);
 
-        if ($resultadoPrecioTotal->num_rows > 0) {
+      if ($resultadoPrecioTotal->num_rows > 0) {
             $filaPrecioTotal = $resultadoPrecioTotal->fetch_assoc();
             $precioTotalActual = $filaPrecioTotal['precioTotal']; // Sacamos el precio total actual
 
             $sqlPrecioProducto = "SELECT precio FROM productos WHERE idProducto = '" . $idProducto . "'";
             $resultadoPrecioProducto = $conexion->query($sqlPrecioProducto);
+            
 
             if ($resultadoPrecioProducto->num_rows > 0) {
                 $filaPrecioProducto = $resultadoPrecioProducto->fetch_assoc();
@@ -125,6 +125,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "Fallo al añadir producto a la cesta";
     }
 }
+
+
 
 ?>
 
@@ -358,7 +360,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                                 echo "<tr>";
                                                                 echo "<td class='align-middle'>" . $objeto->nombreProducto . "</td>";
                                                                 echo "<td class='align-middle'>&#128142;" . $objeto->precio . "</td>";
-                                                                echo "<td class='align-middle'>" . $objeto->descripcion . "</td>";
+                                                                echo "<td class='align-middle' style='max-width:360px;'>" . $objeto->descripcion . "</td>";
                                                                 if ($objeto->cantidad > 0) {
                                                                     echo "<td class='align-middle'>" . $objeto->cantidad . "</td>"; ?>
                                                                     <td><img src=" <?php echo $objeto->imagen ?> "

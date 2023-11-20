@@ -14,7 +14,8 @@ idProducto INT(8) AUTO_INCREMENT PRIMARY KEY,
 nombreProducto VARCHAR(40) NOT NULL,
 precio NUMERIC(7,2) NOT NULL,
 descripcion VARCHAR(255) NOT NULL,
-cantidad INT NOT NULL
+cantidad INT NOT NULL,
+imagen VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE productosCesta (
@@ -35,7 +36,7 @@ CREATE TABLE usuarios (
 usuario VARCHAR(12) PRIMARY KEY,
 contrasena VARCHAR(255) NOT NULL,
 fechaNacimiento DATE NOT NULL,
-rol VARCHAR(20) DEFAULT 'miembro',
+rol VARCHAR(20) DEFAULT 'cliente',
 saldo FLOAT DEFAULT '0'
 );
 

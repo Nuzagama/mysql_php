@@ -4,7 +4,7 @@
     //Destruimos la sesión
     session_destroy();
 
-    header('location: main.php');
+    header('location: main');
 
 
 
