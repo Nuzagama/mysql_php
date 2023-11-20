@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="styles/2b234ocs.css">
     <?php require('../util/conection.php'); ?>
     <?php require('../util/functions.php'); ?>
-    <?php require('../util/producto.php'); ?>
+    <?php require('../util/Producto.php'); ?>
 </head>
 
 <?php
 session_start();
 
 //Comprobamos si es admin o miembro 
-if($_SESSION["rol"] != "admin"){
+if ($_SESSION["rol"] != "admin") {
     $alert_errorMain = "
     No tienes permisos para ver la página a la que estás intentando acceder";
     $_SESSION['alert_error'] = $alert_errorMain;
@@ -28,7 +28,16 @@ if($_SESSION["rol"] != "admin"){
 //Comprobamos si está declarada si no le damos valores por defecto
 if (isset($_SESSION['usuario'])) {
     $usuario = $_SESSION["usuario"];
-    $saldoBalance = $_SESSION["saldo"];
+    //Capturamos el saldo del usuario
+    $sqlSaldoUsuario = "SELECT saldo FROM usuarios WHERE usuario = '" . $usuario . "'";
+    $resultadoSaldo = $conexion->query($sqlSaldoUsuario);
+
+    if ($resultadoSaldo) {
+        $fila = $resultadoSaldo->fetch_assoc();
+        $saldoBalance = $fila['saldo'];
+    } else {
+        $saldoBalance = "???";
+    }
 } else {
     $usuario = "Invitado";
     $saldoBalance = "Invitado";
@@ -114,11 +123,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $cantidadProducto = (int) $temp_cantidadProducto;
         }
     }
-        //Controlamos que no quede vacío
+    //Controlamos que no quede vacío
     if (!strlen($nombre_imagen) > 0) {
         $err_subirImagen = "Debes introducir una imagen";
     } else {
-                //Controlamos tipos y peso
+        //Controlamos tipos y peso
         if ($tipo_imagen == "image/jpg" || $tipo_imagen == "image/png" || $tipo_imagen == "image/jpeg") {
             if ($tamano_imagen > 0 && $tamano_imagen <= 1000000) {
                 $ruta_final = $ruta_final_temp;
@@ -304,14 +313,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                             </div>
                                                             <input class="form-control form-control-lg" type="text"
                                                                 name="nombreProducto"><br><br>
-                                                            <?php if (isset($err_nombreProducto)):?>
-                                                            <div class="alert alert-fill alert-danger alert-icon">
-                                                            <em class="icon ni ni-cross-circle"></em>
-                                                            <strong>
-                                                                <?php echo $err_nombreProducto; ?> 😅
-                                                            </strong>
-                                                        </div>
-                                                        <?php endif; ?>
+                                                            <?php if (isset($err_nombreProducto)): ?>
+                                                                <div class="alert alert-fill alert-danger alert-icon">
+                                                                    <em class="icon ni ni-cross-circle"></em>
+                                                                    <strong>
+                                                                        <?php echo $err_nombreProducto; ?> 😅
+                                                                    </strong>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <div class="form-group">
                                                             <div class="form-label-group">
@@ -319,14 +328,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                             </div>
                                                             <input class="form-control form-control-lg" type="text"
                                                                 name="precioProducto"><br><br>
-                                                            <?php if (isset($err_precioProducto)):?>
+                                                            <?php if (isset($err_precioProducto)): ?>
                                                                 <div class="alert alert-fill alert-danger alert-icon">
-                                                            <em class="icon ni ni-cross-circle"></em>
-                                                            <strong>
-                                                                <?php echo $err_precioProducto; ?> 😅
-                                                            </strong>
-                                                        </div>
-                                                        <?php endif; ?>
+                                                                    <em class="icon ni ni-cross-circle"></em>
+                                                                    <strong>
+                                                                        <?php echo $err_precioProducto; ?> 😅
+                                                                    </strong>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <div class="form-group">
                                                             <div class="form-label-group">
@@ -335,14 +344,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                             </div>
                                                             <input class="form-control form-control-lg" type="text"
                                                                 name="descripcionProducto"><br><br>
-                                                                <?php if (isset($err_descripcionProducto)):?>
+                                                            <?php if (isset($err_descripcionProducto)): ?>
                                                                 <div class="alert alert-fill alert-danger alert-icon">
-                                                            <em class="icon ni ni-cross-circle"></em>
-                                                            <strong>
-                                                                <?php echo $err_descripcionProducto; ?> 😅
-                                                            </strong>
-                                                        </div>
-                                                        <?php endif; ?>
+                                                                    <em class="icon ni ni-cross-circle"></em>
+                                                                    <strong>
+                                                                        <?php echo $err_descripcionProducto; ?> 😅
+                                                                    </strong>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <div class="form-group">
                                                             <div class="form-label-group">
@@ -350,14 +359,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                             </div>
                                                             <input class="form-control form-control-lg" type="text"
                                                                 name="cantidadProducto"><br><br>
-                                                                <?php if (isset($err_cantidadProducto)):?>
+                                                            <?php if (isset($err_cantidadProducto)): ?>
                                                                 <div class="alert alert-fill alert-danger alert-icon">
-                                                            <em class="icon ni ni-cross-circle"></em>
-                                                            <strong>
-                                                                <?php echo $err_cantidadProducto; ?> 😅
-                                                            </strong>
-                                                        </div>
-                                                        <?php endif; ?>
+                                                                    <em class="icon ni ni-cross-circle"></em>
+                                                                    <strong>
+                                                                        <?php echo $err_cantidadProducto; ?> 😅
+                                                                    </strong>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <div class="form-group">
                                                             <div class="form-label-group">
@@ -365,14 +374,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                             </div>
                                                             <input class="form-control form-control-lg" type="file"
                                                                 name="imagen">
-                                                                <?php if (isset($err_subirImagen)):?>
+                                                            <?php if (isset($err_subirImagen)): ?>
                                                                 <div class="alert alert-fill alert-danger alert-icon mt-2">
-                                                            <em class="icon ni ni-cross-circle"></em>
-                                                            <strong>
-                                                                <?php echo $err_subirImagen; ?> 😅
-                                                            </strong>
-                                                        </div>
-                                                        <?php endif; ?>
+                                                                    <em class="icon ni ni-cross-circle"></em>
+                                                                    <strong>
+                                                                        <?php echo $err_subirImagen; ?> 😅
+                                                                    </strong>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <input type="submit" class="btn btn-warning mb-2 mt-3"
                                                             value="Insertar Producto">

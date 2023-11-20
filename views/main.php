@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles/2b234ocs.css">
     <?php require('../util/conection.php'); ?>
     <?php require('../util/functions.php'); ?>
-    <?php require('../util/producto.php'); ?>
+    <?php require('../util/Producto.php'); ?>
 </head>
 
 <?php
@@ -19,7 +19,16 @@ session_start();
 //Comprobamos si está declarada si no le damos valores por defecto
 if (isset($_SESSION['usuario'])) {
     $usuario = $_SESSION["usuario"];
-    $saldoBalance = $_SESSION["saldo"];
+    //Capturamos el saldo del usuario
+    $sqlSaldoUsuario = "SELECT saldo FROM usuarios WHERE usuario = '" . $usuario . "'";
+    $resultadoSaldo = $conexion->query($sqlSaldoUsuario);
+
+    if ($resultadoSaldo) {
+        $fila = $resultadoSaldo->fetch_assoc();
+        $saldoBalance = $fila['saldo'];
+    } else {
+        $saldoBalance = "???";
+    }
 } else {
     $usuario = "Invitado";
     $saldoBalance = "Invitado";
@@ -37,92 +46,118 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cantidad = depurar($_POST['cantidad']);
 
     if (isset($idProducto) && isset($cantidad)) {
-        //Obtenemos ID CESTA
-        $sqlCesta = "SELECT idCesta FROM cestas WHERE usuario = '" . $usuario . "'";
-        $resultadoCesta = $conexion->query($sqlCesta);  
-        //Controlamos que precioTotal no sea mayor a 99.999
-        //Sacamos el PrecioTotal del usuario en ese momento
-        $sqlPrecioTotal = "SELECT precioTotal FROM cestas WHERE usuario = '" . $usuario . "'";
-        $resultadoPrecioTotal = $conexion->query($sqlPrecioTotal);
+        //Controlamos Cantidades del Usuario y Stock de cantidades disponibles
+        $sqlCantidadProducto = "SELECT cantidad FROM productos WHERE idProducto = '" . $idProducto . "'";
+        $resultadoCantidadProducto = $conexion->query($sqlCantidadProducto);
 
-      if ($resultadoPrecioTotal->num_rows > 0) {
-            $filaPrecioTotal = $resultadoPrecioTotal->fetch_assoc();
-            $precioTotalActual = $filaPrecioTotal['precioTotal']; // Sacamos el precio total actual
+        if ($resultadoCantidadProducto->num_rows > 0) {
+            $filaCantidadProducto = $resultadoCantidadProducto->fetch_assoc();
+            $cantidadDisponible = $filaCantidadProducto['cantidad']; // Cantidad disponible en tabla productos
 
-            $sqlPrecioProducto = "SELECT precio FROM productos WHERE idProducto = '" . $idProducto . "'";
-            $resultadoPrecioProducto = $conexion->query($sqlPrecioProducto);
-            
+            if ($cantidad > $cantidadDisponible) {
+                $error_message = "No puedes poner en la cesta esa cantidad de productos, supera el stock disponible.";
+            } else {
+                //Obtenemos ID CESTA
+                $sqlCesta = "SELECT idCesta FROM cestas WHERE usuario = '" . $usuario . "'";
+                $resultadoCesta = $conexion->query($sqlCesta);
+                //Controlamos que precioTotal no sea mayor a 99.999
+                //Sacamos el PrecioTotal del usuario en ese momento
+                $sqlPrecioTotal = "SELECT precioTotal FROM cestas WHERE usuario = '" . $usuario . "'";
+                $resultadoPrecioTotal = $conexion->query($sqlPrecioTotal);
 
-            if ($resultadoPrecioProducto->num_rows > 0) {
-                $filaPrecioProducto = $resultadoPrecioProducto->fetch_assoc();
-                $precioProducto = $filaPrecioProducto['precio']; // Sacamos el precio del producto
+                if ($resultadoPrecioTotal->num_rows > 0) {
+                    $filaPrecioTotal = $resultadoPrecioTotal->fetch_assoc();
+                    $precioTotalActual = $filaPrecioTotal['precioTotal']; // Sacamos el precio total actual
 
-                //Operamos para saber si el nuevo precioTotal, si llega a ser mayor a 99999 cancelamos la operación
-                $tempPrecioTotal = $precioProducto * (int) $cantidad;
-                $nuevoPrecioTotal = $tempPrecioTotal + $precioTotalActual;
+                    $sqlPrecioProducto = "SELECT precio FROM productos WHERE idProducto = '" . $idProducto . "'";
+                    $resultadoPrecioProducto = $conexion->query($sqlPrecioProducto);
 
-                if ($nuevoPrecioTotal > 99999) {
-                    $error_message = "El coste total de tu cesta no puede superar las 99.999 gemas ";
-                } else {
-                    if ($resultadoCesta && $resultadoCesta->num_rows > 0) {
-                        while ($filaCesta = $resultadoCesta->fetch_assoc()) {
-                            $idCesta = $filaCesta["idCesta"];
 
-                            // Verificamos si el producto ya está en la cesta
-                            $sqlVerificar = "SELECT cantidad FROM ProductosCesta WHERE idProducto = '$idProducto' AND idCesta = '$idCesta'";
-                            $resultadoVerificar = $conexion->query($sqlVerificar);
+                    if ($resultadoPrecioProducto->num_rows > 0) {
+                        $filaPrecioProducto = $resultadoPrecioProducto->fetch_assoc();
+                        $precioProducto = $filaPrecioProducto['precio']; // Sacamos el precio del producto
 
-                            if ($resultadoVerificar && $resultadoVerificar->num_rows > 0) {
-                                // El producto ya existe, actualizamos la cantidad
-                                $filaVerificar = $resultadoVerificar->fetch_assoc();
-                                $nuevaCantidad = $filaVerificar['cantidad'] + $cantidad;
+                        //Operamos para saber si el nuevo precioTotal, si llega a ser mayor a 99999 cancelamos la operación
+                        $tempPrecioTotal = $precioProducto * (int) $cantidad;
+                        $nuevoPrecioTotal = $tempPrecioTotal + $precioTotalActual;
 
-                                $sqlUpdate = "UPDATE ProductosCesta SET cantidad = '$nuevaCantidad' WHERE idProducto = '$idProducto' AND idCesta = '$idCesta'";
-                                if (!$conexion->query($sqlUpdate)) {
-                                    $error_message = "Error al actualizar producto en la cesta: ";
+                        if ($nuevoPrecioTotal > 99999) {
+                            $error_message = "El coste total de tu cesta no puede superar las 99.999 gemas ";
+                        } else {
+                            if ($resultadoCesta && $resultadoCesta->num_rows > 0) {
+                                while ($filaCesta = $resultadoCesta->fetch_assoc()) {
+                                    $idCesta = $filaCesta["idCesta"];
+
+                                    // Verificamos si el producto ya está en la cesta
+                                    $sqlVerificar = "SELECT cantidad FROM ProductosCesta WHERE idProducto = '$idProducto' AND idCesta = '$idCesta'";
+                                    $resultadoVerificar = $conexion->query($sqlVerificar);
+
+                                    if ($resultadoVerificar && $resultadoVerificar->num_rows > 0) {
+                                        // El producto ya existe, actualizamos la cantidad
+                                        $filaVerificar = $resultadoVerificar->fetch_assoc();
+                                        $nuevaCantidad = $filaVerificar['cantidad'] + $cantidad;
+
+                                        $sqlUpdate = "UPDATE ProductosCesta SET cantidad = '$nuevaCantidad' WHERE idProducto = '$idProducto' AND idCesta = '$idCesta'";
+                                        if (!$conexion->query($sqlUpdate)) {
+                                            $error_message = "Error al actualizar producto en la cesta: ";
+                                        }
+                                    } else {
+                                        // El producto no existe, insertamos uno nuevo
+                                        $sqlInsert = "INSERT INTO ProductosCesta (idProducto, idCesta, cantidad) VALUES ('$idProducto', '$idCesta', '$cantidad')";
+                                        if (!$conexion->query($sqlInsert)) {
+                                            $error_message = "Error al añadir producto a la cesta: ";
+                                        }
+                                    }
                                 }
-                            } else {
-                                // El producto no existe, insertamos uno nuevo
-                                $sqlInsert = "INSERT INTO ProductosCesta (idProducto, idCesta, cantidad) VALUES ('$idProducto', '$idCesta', '$cantidad')";
-                                if (!$conexion->query($sqlInsert)) {
-                                    $error_message = "Error al añadir producto a la cesta: ";
+
+
+                                //Capturamos el nombre del producto para mostrarlo por alerta
+                                $sqlNombreProducto = "SELECT nombreProducto FROM productos WHERE idProducto = '" . $idProducto . "'";
+                                $resultadoNombreProducto = $conexion->query($sqlNombreProducto);
+
+                                if ($resultadoNombreProducto) {
+                                    $fila = $resultadoNombreProducto->fetch_assoc();
+                                    $nombreProducto = $fila['nombreProducto'];
+                                    //Alerta de éxito al añadir producto a la cesta
+                                    $success_message = "Has añadido $cantidad 📦 $nombreProducto 🦄 con éxito a tu cesta 🛒";
+                                } else {
+                                    $error_message = "Error al recuperar el nombre del producto.";
                                 }
-                            }
-                        }
 
-                        // Después de añadir el producto a la cesta, actualizamos la cantidad en la tabla de productos
-                        $sqlActualizarCantidad = "UPDATE productos SET cantidad = cantidad - $cantidad WHERE idProducto = $idProducto";
-                        if (!$conexion->query($sqlActualizarCantidad)) {
-                            $error_message = "Error al actualizar la cantidad del producto ";
-                        }
 
-                        // $idCesta es el ID de la cesta del usuario
-                        $sqlCalcularTotal = "SELECT SUM(p.precio * pc.cantidad) AS precioTotal
+                                // Después de añadir el producto a la cesta, actualizamos la cantidad en la tabla de productos
+                                $sqlActualizarCantidad = "UPDATE productos SET cantidad = cantidad - $cantidad WHERE idProducto = $idProducto";
+                                if (!$conexion->query($sqlActualizarCantidad)) {
+                                    $error_message = "Error al actualizar la cantidad del producto ";
+                                }
+
+                                // $idCesta es el ID de la cesta del usuario
+                                $sqlCalcularTotal = "SELECT SUM(p.precio * pc.cantidad) AS precioTotal
                                             FROM productos p
                                             JOIN ProductosCesta pc ON p.idProducto = pc.idProducto
                                             WHERE pc.idCesta = $idCesta";
 
-                        $resultado = $conexion->query($sqlCalcularTotal);
-                        if ($resultado->num_rows > 0) {
-                            $fila = $resultado->fetch_assoc();
-                            $precioTotalActualizado = $fila['precioTotal'];
+                                $resultado = $conexion->query($sqlCalcularTotal);
+                                if ($resultado->num_rows > 0) {
+                                    $fila = $resultado->fetch_assoc();
+                                    $precioTotalActualizado = $fila['precioTotal'];
 
-                            // Actualizamos el precio total en la cesta
-                            $sqlActualizarCesta = "UPDATE cestas SET precioTotal = $precioTotalActualizado WHERE idCesta = $idCesta";
-                            $conexion->query($sqlActualizarCesta);
+                                    // Actualizamos el precio total en la cesta
+                                    $sqlActualizarCesta = "UPDATE cestas SET precioTotal = $precioTotalActualizado WHERE idCesta = $idCesta";
+                                    $conexion->query($sqlActualizarCesta);
+                                }
+                            } else {
+                                $error_message = "Cesta no encontrada";
+                            }
                         }
                     } else {
-                        $error_message = "Cesta no encontrada o error en la consulta ";
+                        $error_message = "Error al obtener el precio del producto";
                     }
+                } else {
+                    $error_message = "No puedes agregar productos como Invitado. Inicia sesión porfavor";
                 }
-            } else {
-                $error_message = "Error al obtener el precio del producto";
             }
-        } else {
-            $error_message = "No puedes agregar productos como Invitado. Inicia sesión porfavor";
         }
-    } else {
-        $error_message = "Fallo al añadir producto a la cesta";
     }
 }
 
@@ -360,7 +395,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                                 echo "<tr>";
                                                                 echo "<td class='align-middle'>" . $objeto->nombreProducto . "</td>";
                                                                 echo "<td class='align-middle'>&#128142;" . $objeto->precio . "</td>";
-                                                                echo "<td class='align-middle' style='max-width:360px;'>" . $objeto->descripcion . "</td>";
+                                                                echo "<td class='align-middle' style='max-width:344px;'>" . $objeto->descripcion . "</td>";
                                                                 if ($objeto->cantidad > 0) {
                                                                     echo "<td class='align-middle'>" . $objeto->cantidad . "</td>"; ?>
                                                                     <td><img src=" <?php echo $objeto->imagen ?> "

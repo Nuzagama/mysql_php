@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles/2b234ocs.css">
     <?php require('../util/conection.php'); ?>
     <?php require('../util/functions.php'); ?>
-    <?php require('../util/producto.php'); ?>
+    <?php require('../util/Producto.php'); ?>
 </head>
 
 
@@ -21,7 +21,16 @@ session_start();
 
 if (isset($_SESSION['usuario'])) {
     $usuario = $_SESSION["usuario"];
-    $saldoBalance = $_SESSION["saldo"]; 
+    //Capturamos el saldo del usuario
+    $sqlSaldoUsuario = "SELECT saldo FROM usuarios WHERE usuario = '" . $usuario . "'";
+    $resultadoSaldo = $conexion->query($sqlSaldoUsuario);
+
+    if ($resultadoSaldo) {
+        $fila = $resultadoSaldo->fetch_assoc();
+        $saldoBalance = $fila['saldo'];
+    } else {
+        $saldoBalance = "???";
+    }
 } else {
     $usuario = "Invitado";
     $saldoBalance = "Invitado";

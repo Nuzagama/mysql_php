@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles/2b234ocs.css">
     <?php require('../util/conection.php'); ?>
     <?php require('../util/functions.php'); ?>
-    <?php require('../util/producto.php'); ?>
+    <?php require('../util/Producto.php'); ?>
 </head>
 
 <?php
@@ -19,7 +19,18 @@ session_start();
 //Comprobamos si está declarada si no le damos valores por defecto
 if (isset($_SESSION['usuario'])) {
     $usuario = $_SESSION["usuario"];
-    $saldoBalance = $_SESSION["saldo"];
+
+    //Capturamos el saldo del usuario
+    $sqlSaldoUsuario = "SELECT saldo FROM usuarios WHERE usuario = '" . $usuario . "'";
+    $resultadoSaldo = $conexion->query($sqlSaldoUsuario);
+
+    if ($resultadoSaldo) {
+        $fila = $resultadoSaldo->fetch_assoc();
+        $saldoBalance = $fila['saldo'];
+    } else {
+        $saldoBalance = "???";
+    }
+
 } else {
     $usuario = "Invitado";
     $saldoBalance = "Invitado";
@@ -58,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($conexion->query($sql) === TRUE) {
                     $success_message = "Saldo Actualizado con éxito";
                 } else {
-                    $error_message = "Error al actualizar el saldo: " . $conexion->error;
+                    $error_message = "Error al actualizar el saldo";
                 }
             } else {
                 $error_message = "Cantidad de saldo inválida.";
